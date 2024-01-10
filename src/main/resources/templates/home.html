@@ -1,10 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>기본페이지</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script th:inline="javascript">
+        function login(){
+            alert("로그인페이지 버튼동작");
+            window.location.href="/login";
+        }
+
+        function join(){
+            alert("회원가입 페이지 버튼 동작");
+            window.location.href = "/join";
+        }
+
+    </script>
+
 </head>
 <body>
-$END$
+<h1>홈페이지</h1>
+
+
+<h2>시큐티리 홈페이지에 오신거를 환영합니다.</h2>
+<div sec:authorize="!isAuthenticated()">
+    <button onclick="login()">로그인하러가기</button>
+    <button onclick="join()">회원가입 하러가기</button>
+</div>
+
+<div sec:authorize="isAuthenticated()">
+    <a>로그인성공</a>
+    <div th:text="'사용자 이름: '+ ${member.getUsername()}"></div>
+    <div th:text="'사용자 아이디: '+ ${member.getLoginId()}"></div>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">로그아웃</button>
+    </form>
+</div>
 </body>
 </html>

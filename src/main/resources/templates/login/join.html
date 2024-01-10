@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script th:inline="javascript">
+    var csrfToken = /*[[${_csrf.token}]]*/ '';
+    var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
+
+    function join(){
+      const username = document.getElementById('username_input').value;
+      const loginId = document.getElementById('loginId_input').value;
+      const password = document.getElementById('password_input').value;
+      const memberInfo =[];
+
+      memberInfo.push(username);
+      memberInfo.push(loginId);
+      memberInfo.push(password);
+
+      var MemberInfo={
+        "memberInfo": memberInfo
+      };
+
+      $.ajax({
+        url : "/join",
+        type : "post",
+        contentType : "application/json",
+        data : JSON.stringify(MemberInfo),
+        beforeSend : function (xhr){
+          xhr.setRequestHeader(csrfHeader,csrfToken);
+        },
+        success: function (response){
+          alert("회원가입성공");
+          window.location.href= "/";
+        },
+        error: function (xhr,status,error){
+          if(xhr===500){
+            alert("회원가입 도중 오류발생");
+          }
+        }
+      })
+    }
+  </script>
+</head>
+<body>
+  <div>
+      <label th:for="username">Username:</label>
+      <input  id="username_input"  type="text" th:field="${member.username}"><br><br>
+
+      <label th:for="loginId">Login ID:</label>
+      <input type="text" th:field="${member.loginId}"  id="loginId_input"><br><br>
+
+      <label th:for="password">Password:</label>
+      <input type="password" th:field="${member.password}" id="password_input"><br><br>
+
+      <button onclick="join()">회원가입하기</button>
+  </div>
+</body>
+</html>
