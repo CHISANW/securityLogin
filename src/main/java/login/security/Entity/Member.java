@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 
 @Entity
 @Data
@@ -21,7 +22,14 @@ public class Member {
 
     private String username;
 
+
     private String loginId;
     private String password;
+
+    private String loginType;
+
+    private String email;
+
+    private boolean verified;
 
 }
