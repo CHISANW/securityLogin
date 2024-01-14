@@ -7,53 +7,75 @@
   <script th:inline="javascript">
     var csrfToken = /*[[${_csrf.token}]]*/ '';
     var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
-    var duplicate = false;
+    var checkId = false;
+    var checkPwd= false;
 
     function join(){
       const username = document.getElementById('username_input').value;
       const loginId = document.getElementById('loginId_input').value;
       const password = document.getElementById('password_input').value;
       const email = document.getElementById('email_input').value;
-      const memberInfo =[];
 
-      memberInfo.push(username);
-      memberInfo.push(loginId);
+        var memberDto = {
+            "username": username,
+            "loginId": loginId,
+            "password": password,
+            "re_password": document.getElementById('re_password_input').value,
+            "email": email
+        };
 
-      memberInfo.push(password);
-      memberInfo.push(email);
-
-        // if (!username || !loginId || !password || !email) {
-        //     alert("모든 필드를 입력해주세요.");
-        //     return;
-        // }
-      var MemberInfo={
-        "memberInfo": memberInfo
-      };
-
-      if(duplicate) {
+      if(checkId&&checkPwd) {
           $.ajax({
               url: "/join",
               type: "post",
               contentType: "application/json",
-              data: JSON.stringify(MemberInfo),
+              data: JSON.stringify(memberDto),
               beforeSend: function (xhr) {
                   xhr.setRequestHeader(csrfHeader, csrfToken);
               },
               success: function (response) {
-                  alert("회원가입성공");
-                  // window.location.href= "/";
+                  alert("입력하신 메일로 이메일이 발송되었습니다.");
+                  window.location.href= "/";
               },
               error: function (xhr, status, errors) {
                   if (xhr.status === 500) {
                       alert("회원가입 도중 오류발생");
                   }
                   if (xhr.status === 400) {
-                      alert("이메일 형식이 올바르지 않습니다.");
+                      var errorMap = JSON.parse(xhr.responseText);
+                      $.each(errorMap, function (key,value){
+                        if (key === 'username'){
+                            $('#usernameError').html("<span> "+value+"</span>").css({
+                                "color": "#dc3545",
+                                "font-weight": "bold",
+                                "font-size": "13px"
+                            });
+                        }
+                          if (key === 'email'){
+                              $('#emailError').html("<span>"+value+"</span>").css({
+                                  "color": "#dc3545",
+                                  "font-weight": "bold",
+                                  "font-size": "13px"
+                              });
+                          }
+                          if (key === 'password'){
+                              $('#passwordError').html("<span>"+value+"</span>").css({
+                                  "color": "#dc3545",
+                                  "font-weight": "bold",
+                                  "font-size": "13px"
+                              });
+                          }
+                      });
+                      alert("바인딩 오류 발생");
                   }
               }
           });
-      }else if (!duplicate){
-        alert("중복검사를 해주세요");
+      }else if (!checkId){
+        alert("아이디 중복검사를 해주세요");
+      }else if (!checkPwd){
+          alert("비밀번호  중복검사를 해주세요");
+      }else if (!checkPwd && !checkId){
+          alert("중복검사를 진행해주세요");
       }
     }
 
@@ -79,7 +101,8 @@
                     "font-size": "13px"
                 });
                 $('#duplicatedIdBtn').prop('disabled', true);
-                duplicate=true;
+                $('#loginId_input').prop('disabled', true);
+                checkId=true;
             },
             error: function (xhr, status, errors) {
                 if (xhr.status=== 500) {
@@ -103,39 +126,27 @@
     function duplicatePwd(){
         const password = document.getElementById('password_input').value;
         const re_password = document.getElementById('re_password_input').value;
-
         console.log("password:",password);
         console.log("re_password:",re_password);
-        var passwordInfo = {
-            "password":password,
-            "re_password":re_password
+
+        if (password === re_password){
+            $('#re_passwordError').html("<span> 비밀번호 일치</span>").css({
+                "color": "#0a53be",
+                "font-weight": "bold",
+                "font-size": "13px"
+            });
+            checkPwd =true;
+        }else {
+            $('#re_passwordError').html("<span> 비밀번호 불일치</span>").css({
+                "color": "#dc3545",
+                "font-weight": "bold",
+                "font-size": "13px"
+            });
+            checkPwd = false;
         }
-
-        $.ajax({
-            url: "/duplicatePwd",
-            type: "post",
-            contentType : "application/json",
-            data : JSON.stringify(passwordInfo),
-            beforeSend: function (xhr){
-                xhr.setRequestHeader(csrfHeader, csrfToken);
-            },
-            success : function (response){
-                $('#passwordError').html("<span> 비밀번호 일치</span>").css({
-                    "color": "#0a53be",
-                    "font-weight": "bold",
-                    "font-size": "13px"
-                });
-            },
-            error: function (xhr, status, errors) {
-                if (xhr.status=== 500) {
-                    alert("오류발생");
-                }
-
-            }
-
-        });
-
     }
+
+
 
   </script>
 
@@ -143,33 +154,30 @@
 <body>
   <div>
       <label th:for="username">Username:</label>
-      <input  id="username_input"  type="text" th:field="${member.username}">
-      <div th:if="${#fields.hasErrors('member.username')}">
-          <span th:errors="*{member.username}"></span>
-      </div>
-      <br><br>
+      <input id="username_input" type="text" th:field="${member.username}">
+      <div class="invalid-feedback" id="usernameError"></div>
+      <br>
 
       <label th:for="loginId">Login ID:</label>
-      <input type="text" th:field="${member.loginId}"  id="loginId_input">
+      <input type="text" th:field="${member.loginId}" id="loginId_input">
       <button id="duplicatedIdBtn" onclick="duplicatedId()">중복 검사</button>
-      <div class="invalid-feedback" id="loginIdError">
-          <small th:class="text-danger" th:errors="${member.loginId}"></small>
-      </div>
+      <div class="invalid-feedback" id="loginIdError"></div>
       <br>
+
       <label th:for="password">Password:</label>
-      <input type="password" th:field="${member.password}" id="password_input"><br><br>
+      <input type="password" th:field="${member.password}" id="password_input">
+      <div class="invalid-feedback" id="passwordError"></div>
+      <br>
 
-      <label th:for="repassword">Password:</label>
+      <label th:for="re_password">Password:</label>
       <input type="password" th:field="${member.re_password}" id="re_password_input" oninput="duplicatePwd()">
-      <div class="invalid-feedback" id="passwordError">
-          <small th:class="text-danger" th:errors="${member.re_password}"></small>
-      </div>
-      <br><br>
-
+      <div class="invalid-feedback" id="re_passwordError"></div>
+      <br>
 
       <label th:for="email">email:</label>
-      <input type="text" th:field="${member.email}" id="email_input"><br><br>
-
+      <input type="text" th:field="${member.email}" id="email_input">
+      <div class="invalid-feedback" id="emailError"></div>
+      <br>
 
 
       <button onclick="join()">회원가입하기</button>

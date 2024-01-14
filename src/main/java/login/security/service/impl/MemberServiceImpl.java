@@ -31,18 +31,13 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Member join(List<String> memberInfo) {
-        String username = memberInfo.get(0);
-        String loginId = memberInfo.get(1);
-        String password = memberInfo.get(2);
-        String email = memberInfo.get(3);
-
+    public Member join(MemberDto memberDto) {
 
         Member build = Member.builder()
-                .username(username)
-                .loginId(loginId)
-                .password(passwordEncoder.encode(password))
-                .email(email)
+                .username(memberDto.getUsername())
+                .loginId(memberDto.getLoginId())
+                .password(passwordEncoder.encode(memberDto.getPassword()))
+                .email(memberDto.getEmail())
                 .loginType("ORIGINAL").build();
         return memberRepository.save(build);
     }

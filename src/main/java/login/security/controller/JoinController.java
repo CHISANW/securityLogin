@@ -20,9 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -38,16 +36,19 @@ public class JoinController {
         return "login/join"; // 보여줄 HTML 뷰의 이름 반환
     }
     @PostMapping("/join")
-    public ResponseEntity<?> registerMember(@RequestBody Map<String,Object> memberInfo) {
+    public ResponseEntity<?> registerMember(@Valid @RequestBody MemberDto memberDto,BindingResult result) {
         try {
-            List<String> memberInfo1 = (List<String>) memberInfo.get("memberInfo");
+            if (result.hasErrors()){
+                Map<String,String> errorMessage=new HashMap<>();
+                for (FieldError error : result.getFieldErrors()) {
 
-            if (!memberInfo1.get(3).contains("@")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 형식이 올바르지 않습니다.");
+                  errorMessage.put(error.getField(),error.getDefaultMessage());
+                }
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
             }
-            Member join = memberService.join(memberInfo1);
-            eventPublisher.publishEvent(new MemberJoinEvent(join));
 
+            Member joinMember = memberService.join(memberDto);
+            eventPublisher.publishEvent(new MemberJoinEvent(joinMember));   // 회원 가입시 메일 전송 이벤트 실행
             return ResponseEntity.ok("회원가입 성공");
         } catch (Exception e) {
             e.printStackTrace();
@@ -59,6 +60,7 @@ public class JoinController {
     @ResponseBody
     public ResponseEntity<?> duplicatedId(@RequestBody Map<String,Object> duplicateId){
         try {
+            log.info("dup={}",duplicateId);
             String loginId = (String) duplicateId.get("loginId");
             Member byLoginId = memberService.findByLoginId(loginId);
 
@@ -76,26 +78,6 @@ public class JoinController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("검사중 오류발생");
-        }
-    }
-
-    @PostMapping("/duplicatePwd")
-    @ResponseBody
-    public ResponseEntity<?> duplicatedPwd(@RequestBody Map<String,Object> passwordInfo){
-        try {
-            String password = (String) passwordInfo.get("password");
-            String rePassword = (String) passwordInfo.get("re_password");
-
-            if (password.equals(rePassword)) {
-                log.info("Passwords match");
-                return ResponseEntity.ok("Passwords match");
-            } else {
-                log.info("Passwords do not match");
-                return ResponseEntity.badRequest().body("Passwords do not match");
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("비밀검사 서버 오류");
         }
     }
 

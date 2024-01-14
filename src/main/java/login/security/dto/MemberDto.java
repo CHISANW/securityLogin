@@ -9,12 +9,11 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
 @Data
-@Validated
 public class MemberDto {
 
     private Long id;
 
-    @NotEmpty(message = "아이디를 입력하세요")
+    @NotEmpty(message = "사용자 이름을 입력하세요")
     private String username;
 
     @NotEmpty(message = "아이디를 입력하세요")
@@ -25,6 +24,7 @@ public class MemberDto {
     private String re_password;
 
 
+    @NotEmpty(message = "이메일을 입력해주세요")
     private String email;
 
     private boolean verified;
