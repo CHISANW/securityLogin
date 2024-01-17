@@ -12,7 +12,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
 import java.util.Map;
 
 @Controller
@@ -42,14 +41,11 @@ public class HomeController {
             Member member = memberService.findByLoginId(name);
             Member NaverMember = memberService.findByLoginId(NaverId);
             if (member!=null && member.getLoginType().equals("google")) {
-                log.info("구글 싱행");
                 model.addAttribute("GoogleMember", member);
             }else if (member!=null && member.getLoginType().equals("facebook")){
-                log.info("페이스북 실행");
                 model.addAttribute("facebookMember",member);
             }
             if (NaverMember != null){
-                log.info("NaverMember={}",NaverMember);
                 model.addAttribute("NaverAuth",NaverMember);
             }
             if (attributes != null) {

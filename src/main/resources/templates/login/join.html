@@ -37,7 +37,7 @@
                   alert("입력하신 메일로 이메일이 발송되었습니다.");
                   window.location.href= "/";
               },
-              error: function (xhr, status, errors) {
+              error: function (xhr) {
                   if (xhr.status === 500) {
                       alert("회원가입 도중 오류발생");
                   }

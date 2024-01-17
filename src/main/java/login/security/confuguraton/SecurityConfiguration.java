@@ -2,6 +2,7 @@ package login.security.confuguraton;
 
 import login.security.confuguraton.oauth.PrincipalOauthUserService;
 import login.security.handler.CustomAuthenticationFailureHandler;
+import login.security.handler.CustomOauthLogoutHandler;
 import login.security.handler.OAuth2AuthorizationSuccessHandler;
 import login.security.service.CustomUserDetailService;
 import login.security.service.MemberService;
@@ -23,20 +24,20 @@ public class SecurityConfiguration  extends WebSecurityConfigurerAdapter {
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final OAuth2AuthorizationSuccessHandler oAuth2AuthorizationSuccessHandler;
     private final PrincipalOauthUserService customOAuth2UserService;
-
+    private final CustomOauthLogoutHandler customOauthLogoutHandler;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
         .authorizeRequests()
-                .antMatchers("/login","/","/join","/login-disabled","/login-error","/login-emailVerified","/verify/email","/duplicatedId").permitAll()
+                .antMatchers("/login","/","/join","/login-disabled","/login-error","/login-emailVerified","/verify/email","/duplicatedId","/kakaoLogout").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().loginPage("/login")
-                .failureHandler(customAuthenticationFailureHandler) .loginProcessingUrl("/login")
+                .failureHandler(customAuthenticationFailureHandler).loginProcessingUrl("/login")
                 .defaultSuccessUrl("/")
                 .and()
-                .logout().logoutSuccessUrl("/")
+                .logout().logoutUrl("/logout").logoutSuccessHandler(customOauthLogoutHandler).logoutSuccessUrl("/")
                 .and()
                 .rememberMe().key("remember-me-key").rememberMeCookieName("security-remember-me")
                 .and()

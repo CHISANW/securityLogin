@@ -42,46 +42,10 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.save(build);
     }
 
-    @Override
-    public Member OAuthGoogleJoin(String loginId, String username) {
-        Member googleMember = Member.builder()
-                .loginId(loginId)
-                .username(username).build();
-        Member member = memberRepository.findByLoginId(loginId);
-        if (member == null) {
-            return memberRepository.save(googleMember);
-        }
-    return member;
-    }
-
-    @Override
-    public Member OauthFacebookJoin(String loginId, String username) {
-        Member faceBookMember = Member.builder()
-                .loginId(loginId)
-                .username(username).build();
-        Member member = memberRepository.findByLoginId(loginId);
-        if (member == null) {
-            return memberRepository.save(faceBookMember);
-        }
-        return member;
-    }
-
-    @Override
-    public Member OauthKakaoJoin(String Id, String username) {
-        return null;
-    }
-
 
     @Override
     public Member findByLoginId(String loginId) {
         return memberRepository.findByLoginId(loginId);
     }
 
-    private boolean duplicateLoginId(String loginId){
-        Member byLoginId = memberRepository.findByLoginId(loginId);
-        if (byLoginId.getLoginId().equals(loginId))     //로그인아이디가 포험되어있다면 거짓
-            return false;
-        else
-            return true;                                //없으면 참
-    }
 }

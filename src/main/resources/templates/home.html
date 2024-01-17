@@ -6,6 +6,8 @@
     <title>기본페이지</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script th:inline="javascript">
+        var csrfToken = /*[[${_csrf.token}]]*/ '';
+        var csrfHeader = /*[[${_csrf.headerName}]]*/ '';
         function login(){
             window.location.href="/login";
         }
@@ -14,6 +16,96 @@
             window.location.href = "/join";
         }
 
+        function kakaoLogout() {
+            $.ajax({
+                url: "/kakaoLogout",
+                type: "post",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                },
+                success: function (response) {
+                    console.log(response);
+                    if (response.success) {
+                        performLogout();
+                    } else {
+                        alert("카카오톡 로그아웃 실패: " + response.fail);
+                    }
+                },
+                error: function (xhr) {
+                    handleServerError(xhr);
+                    handleBadRequest(xhr);
+                }
+            });
+        }
+
+        function kakaoDisconnecting(){
+            $.ajax({
+                url:"/kakaoDisconnect",
+                type : "post",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                },
+                success: function (response) {
+                    console.log(response);
+                    if (response ==="성공") {
+                        performLogout();
+                    } else {
+                        alert("카카오톡 연결끊기 실패: " + response.fail);
+                    }
+                },
+                error: function (xhr) {
+                    handleServerError(xhr);
+                    handleBadRequest(xhr);
+                }
+            });
+        }
+
+        function NaverDisconnecting(){
+            $.ajax({
+                url:"/NaverDisconnect",
+                type : "post",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                },
+                success: function (response) {
+                    performLogout();
+                },
+                error: function (xhr) {
+                    handleServerError(xhr);
+                    handleBadRequest(xhr);
+                }
+            });
+        }
+        function performLogout() {
+            $.ajax({
+                url: "/logout",
+                type: "post",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                },
+                success: function () {
+                    alert("로그아웃 성공");
+                    window.location.href = "/";
+                },
+                error: function (xhr) {
+                    handleServerError(xhr);
+                }
+            });
+        }
+
+        function handleServerError(xhr) {
+            if (xhr.status === 500) {
+                alert("서버 오류");
+            }
+        }
+        function handleBadRequest(xhr) {
+            if (xhr.status === 400) {
+                alert("400에러");
+            }
+        }
     </script>
 
 </head>
@@ -47,12 +139,15 @@
         <p style="color: #0a53be">네이버 로그인</p>
         <div th:text="'사용자이름: '+${NaverAuth.getUsername()}"></div>
         <div th:text="'사용자 아이디: '+ ${NaverAuth.getLoginId()}"></div>
+        <button onclick="NaverDisconnecting()">네이버 연결 끊기</button>
     </div>
 
     <div th:if="${KakaoOauth !=null and KakaoOauth.loginType=='kakao'}">
         <p style="color: #0a53be">카카오 로그인</p>
         <div th:text="'사용자이름: '+${KakaoOauth.getUsername()}"></div>
         <div th:text="'사용자 아이디: '+ ${KakaoOauth.getLoginId()}"></div>
+            <button onclick="kakaoLogout()">카카오톡 로그아웃</button>
+            <button onclick="kakaoDisconnecting()">카카오톡 연결 끊기</button>
     </div>
 
 
